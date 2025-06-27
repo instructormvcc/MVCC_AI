@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GED Geometry Flash Cards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .card-container {
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            width: 400px;
+            height: 300px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+            color: #333;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(139, 195, 74, 0.8));
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #4a5568;
+        }
+
+        .card-back h2 {
+            color: white;
+        }
+
+        .card p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .formula {
+            background: rgba(0,0,0,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .card-back .formula {
+            background: rgba(255,255,255,0.2);
+            border-left-color: white;
+        }
+
+        .progress {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .card-number {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.2);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .flip-hint {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+
+        @media (max-width: 500px) {
+            .card {
+                width: 350px;
+                height: 280px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📐 GED Geometry Flash Cards</h1>
+        <p>Master geometry concepts with interactive flip cards</p>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="shuffleCards()">🔀 Shuffle</button>
+        <button class="btn" onclick="resetProgress()">🔄 Reset Progress</button>
+        <button class="btn" onclick="showOnlyMissed()">❌ Review Missed</button>
+    </div>
+
+    <div class="progress">
+        <span>Progress:</span>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <span id="progressText">0/20</span>
+    </div>
+
+    <div class="card-container">
+        <div class="card" id="flashcard" onclick="flipCard()">
+            <div class="card-number" id="cardNumber">1/20</div>
+            <div class="card-face card-front" id="cardFront">
+                <h2>Area of a Rectangle</h2>
+                <p>What is the formula for finding the area of a rectangle?</p>
+            </div>
+            <div class="card-face card-back" id="cardBack">
+                <h2>Area of Rectangle</h2>
+                <div class="formula">A = length × width</div>
+                <p>Example: A rectangle with length 8 ft and width 5 ft has an area of 8 × 5 = 40 square feet.</p>
+            </div>
+        </div>
+    </div>
+
+    <p class="flip-hint">💡 Click the card to flip it!</p>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="previousCard()">⬅️ Previous</button>
+        <button class="nav-btn" onclick="markCorrect()">✅ Got It!</button>
+        <button class="nav-btn" onclick="markIncorrect()">❌ Need Review</button>
+        <button class="nav-btn" id="nextBtn" onclick="nextCard()">Next ➡️</button>
+    </div>
+
+    <script>
+        const cards = [
+            {
+                front: { title: "Area of a Rectangle", content: "What is the formula for finding the area of a rectangle?" },
+                back: { title: "Area of Rectangle", content: "A = length × width", example: "Example: A rectangle with length 8 ft and width 5 ft has an area of 8 × 5 = 40 square feet." }
+            },
+            {
+                front: { title: "Area of a Triangle", content: "What is the formula for finding the area of a triangle?" },
+                back: { title: "Area of Triangle", content: "A = ½ × base × height", example: "Example: A triangle with base 6 cm and height 4 cm has an area of ½ × 6 × 4 = 12 square cm." }
+            },
+            {
+                front: { title: "Circumference of a Circle", content: "What is the formula for finding the circumference of a circle?" },
+                back: { title: "Circumference of Circle", content: "C = 2πr or C = πd", example: "Example: A circle with radius 3 inches has circumference = 2π(3) = 6π ≈ 18.85 inches." }
+            },
+            {
+                front: { title: "Area of a Circle", content: "What is the formula for finding the area of a circle?" },
+                back: { title: "Area of Circle", content: "A = πr²", example: "Example: A circle with radius 5 meters has area = π(5)² = 25π ≈ 78.54 square meters." }
+            },
+            {
+                front: { title: "Pythagorean Theorem", content: "What is the Pythagorean theorem used for right triangles?" },
+                back: { title: "Pythagorean Theorem", content: "a² + b² = c²", example: "Example: In a right triangle with legs 3 and 4, the hypotenuse = √(3² + 4²) = √(9 + 16) = 5." }
+            },
+            {
+                front: { title: "Volume of a Rectangular Prism", content: "What is the formula for the volume of a rectangular prism (box)?" },
+                back: { title: "Volume of Rectangular Prism", content: "V = length × width × height", example: "Example: A box with dimensions 4×3×2 feet has volume = 4 × 3 × 2 = 24 cubic feet." }
+            },
+            {
+                front: { title: "Volume of a Cylinder", content: "What is the formula for the volume of a cylinder?" },
+                back: { title: "Volume of Cylinder", content: "V = πr²h", example: "Example: A cylinder with radius 2 cm and height 6 cm has volume = π(2)²(6) = 24π ≈ 75.4 cubic cm." }
+            },
+            {
+                front: { title: "Perimeter of a Rectangle", content: "What is the formula for the perimeter of a rectangle?" },
+                back: { title: "Perimeter of Rectangle", content: "P = 2(length + width)", example: "Example: A rectangle with length 7 ft and width 3 ft has perimeter = 2(7 + 3) = 20 feet." }
+            },
+            {
+                front: { title: "Sum of Angles in a Triangle", content: "What do the three angles in any triangle add up to?" },
+                back: { title: "Triangle Angle Sum", content: "Sum = 180°", example: "Example: If two angles are 60° and 70°, the third angle = 180° - 60° - 70° = 50°." }
+            },
+            {
+                front: { title: "Area of a Parallelogram", content: "What is the formula for the area of a parallelogram?" },
+                back: { title: "Area of Parallelogram", content: "A = base × height", example: "Example: A parallelogram with base 8 cm and height 5 cm has area = 8 × 5 = 40 square cm." }
+            },
+            {
+                front: { title: "Surface Area of a Cube", content: "What is the formula for the surface area of a cube?" },
+                back: { title: "Surface Area of Cube", content: "SA = 6s²", example: "Example: A cube with side length 4 inches has surface area = 6(4)² = 6(16) = 96 square inches." }
+            },
+            {
+                front: { title: "Volume of a Cone", content: "What is the formula for the volume of a cone?" },
+                back: { title: "Volume of Cone", content: "V = ⅓πr²h", example: "Example: A cone with radius 3 ft and height 9 ft has volume = ⅓π(3)²(9) = 27π ≈ 84.8 cubic feet." }
+            },
+            {
+                front: { title: "Diameter and Radius", content: "What is the relationship between diameter and radius of a circle?" },
+                back: { title: "Diameter and Radius", content: "d = 2r", example: "Example: If radius = 6 cm, then diameter = 2(6) = 12 cm. If diameter = 14 inches, then radius = 14/2 = 7 inches." }
+            },
+            {
+                front: { title: "Area of a Trapezoid", content: "What is the formula for the area of a trapezoid?" },
+                back: { title: "Area of Trapezoid", content: "A = ½(b₁ + b₂)h", example: "Example: A trapezoid with parallel sides 6 and 10 cm and height 4 cm has area = ½(6 + 10)(4) = 32 square cm." }
+            },
+            {
+                front: { title: "Volume of a Sphere", content: "What is the formula for the volume of a sphere?" },
+                back: { title: "Volume of Sphere", content: "V = ⁴⁄₃πr³", example: "Example: A sphere with radius 3 meters has volume = ⁴⁄₃π(3)³ = ⁴⁄₃π(27) = 36π ≈ 113.1 cubic meters." }
+            },
+            {
+                front: { title: "Right Angle", content: "How many degrees is a right angle?" },
+                back: { title: "Right Angle", content: "90°", example: "Example: The corner of a square or rectangle forms a right angle of exactly 90 degrees." }
+            },
+            {
+                front: { title: "Straight Angle", content: "How many degrees is a straight angle (straight line)?" },
+                back: { title: "Straight Angle", content: "180°", example: "Example: A straight line forms a 180° angle. Two right angles together make a straight angle." }
+            },
+            {
+                front: { title: "Complementary Angles", content: "What do complementary angles add up to?" },
+                back: { title: "Complementary Angles", content: "90°", example: "Example: If one angle is 35°, its complement is 90° - 35° = 55°." }
+            },
+            {
+                front: { title: "Supplementary Angles", content: "What do supplementary angles add up to?" },
+                back: { title: "Supplementary Angles", content: "180°", example: "Example: If one angle is 120°, its supplement is 180° - 120° = 60°." }
+            },
+            {
+                front: { title: "Similar Triangles", content: "In similar triangles, what is true about corresponding sides?" },
+                back: { title: "Similar Triangles", content: "Corresponding sides are proportional", example: "Example: If triangle ABC ~ triangle DEF with ratio 2:3, and AB = 4, then DE = 6." }
+            }
+        ];
+
+        let currentCardIndex = 0;
+        let isFlipped = false;
+        let progress = new Array(cards.length).fill(false);
+        let reviewMode = false;
+        let reviewCards = [];
+
+        function updateCard() {
+            const card = cards[currentCardIndex];
+            const cardElement = document.getElementById('flashcard');
+            const frontElement = document.getElementById('cardFront');
+            const backElement = document.getElementById('cardBack');
+            const cardNumber = document.getElementById('cardNumber');
+
+            if (isFlipped) {
+                cardElement.classList.remove('flipped');
+                isFlipped = false;
+            }
+
+            frontElement.innerHTML = `
+                <h2>${card.front.title}</h2>
+                <p>${card.front.content}</p>
+            `;
+
+            backElement.innerHTML = `
+                <h2>${card.back.title}</h2>
+                <div class="formula">${card.back.content}</div>
+                <p>${card.back.example}</p>
+            `;
+
+            const totalCards = reviewMode ? reviewCards.length : cards.length;
+            const currentIndex = reviewMode ? reviewCards.indexOf(currentCardIndex) + 1 : currentCardIndex + 1;
+            cardNumber.textContent = `${currentIndex}/${totalCards}`;
+
+            updateNavigation();
+        }
+
+        function flipCard() {
+            const cardElement = document.getElementById('flashcard');
+            cardElement.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+        }
+
+        function nextCard() {
+            if (reviewMode) {
+                const currentReviewIndex = reviewCards.indexOf(currentCardIndex);
+                if (currentReviewIndex < reviewCards.length - 1) {
+                    currentCardIndex = reviewCards[currentReviewIndex + 1];
+                    updateCard();
+                }
+            } else {
+                if (currentCardIndex < cards.length - 1) {
+                    currentCardIndex++;
+                    updateCard();
+                }
+            }
+        }
+
+        function previousCard() {
+            if (reviewMode) {
+                const currentReviewIndex = reviewCards.indexOf(currentCardIndex);
+                if (currentReviewIndex > 0) {
+                    currentCardIndex = reviewCards[currentReviewIndex - 1];
+                    updateCard();
+                }
+            } else {
+                if (currentCardIndex > 0) {
+                    currentCardIndex--;
+                    updateCard();
+                }
+            }
+        }
+
+        function markCorrect() {
+            progress[currentCardIndex] = true;
+            updateProgress();
+            nextCard();
+        }
+
+        function markIncorrect() {
+            progress[currentCardIndex] = false;
+            nextCard();
+        }
+
+        function updateProgress() {
+            const completed = progress.filter(p => p).length;
+            const total = cards.length;
+            const percentage = (completed / total) * 100;
+
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+            document.getElementById('progressText').textContent = `${completed}/${total}`;
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (reviewMode) {
+                const currentReviewIndex = reviewCards.indexOf(currentCardIndex);
+                prevBtn.disabled = currentReviewIndex === 0;
+                nextBtn.disabled = currentReviewIndex === reviewCards.length - 1;
+            } else {
+                prevBtn.disabled = currentCardIndex === 0;
+                nextBtn.disabled = currentCardIndex === cards.length - 1;
+            }
+        }
+
+        function shuffleCards() {
+            const shuffled = [...Array(cards.length).keys()];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            const shuffledCards = shuffled.map(i => cards[i]);
+            const shuffledProgress = shuffled.map(i => progress[i]);
+            
+            cards.length = 0;
+            cards.push(...shuffledCards);
+            progress.length = 0;
+            progress.push(...shuffledProgress);
+            
+            currentCardIndex = 0;
+            reviewMode = false;
+            updateCard();
+            updateProgress();
+        }
+
+        function resetProgress() {
+            progress = new Array(cards.length).fill(false);
+            currentCardIndex = 0;
+            reviewMode = false;
+            updateProgress();
+            updateCard();
+        }
+
+        function showOnlyMissed() {
+            reviewCards = [];
+            for (let i = 0; i < progress.length; i++) {
+                if (!progress[i]) {
+                    reviewCards.push(i);
+                }
+            }
+
+            if (reviewCards.length === 0) {
+                alert("Great job! You've mastered all the cards. Try shuffling for more practice!");
+                return;
+            }
+
+            reviewMode = true;
+            currentCardIndex = reviewCards[0];
+            updateCard();
+        }
+
+        // Initialize
+        updateCard();
+        updateProgress();
+    </script>
+</body>
+</html>
